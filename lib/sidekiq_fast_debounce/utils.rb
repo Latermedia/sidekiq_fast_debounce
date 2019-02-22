@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module SidekiqFastDebounce
+  # Utility methods for dealing with debounce options
   class Utils
     class << self
       def const(klass)
@@ -9,7 +10,7 @@ module SidekiqFastDebounce
         elsif klass.is_a?(String)
           klass.split('::').reduce(Module, :const_get)
         else
-          raise ArgumentError.new("klass should be String or Class, it is `#{klass.class}`")
+          raise ArgumentError, "klass should be String or Class, it is `#{klass.class}`"
         end
       end
 
@@ -56,7 +57,7 @@ module SidekiqFastDebounce
           end
 
           if found_debounce_opt
-            if arg_opts.length == 0
+            if arg_opts.empty?
               args.pop
             else
               args[num_args - 1] = arg_opts
@@ -67,18 +68,17 @@ module SidekiqFastDebounce
         opts
       end
 
-      def debounce_namespace(klass, job, deb_opts = {})
+      def debounce_namespace(klass, _job, deb_opts = {})
         return deb_opts[:debounce_namespace] if deb_opts.key?(:debounce_namespace)
 
         klass.to_s
       end
 
-      def debounce_key(klass, job, deb_opts = {})
+      def debounce_key(_klass, job, deb_opts = {})
         return deb_opts[:debounce_key] if deb_opts.key?(:debounce_key)
+        raise ArgumentError, 'No way to determine debounce key' if job['args'].empty?
 
-        if job['args'].length == 0
-          raise ArgumentError.new('No way to determine debounce key')
-        elsif job['args'].length == 1
+        if job['args'].length == 1
           job['args'].first
         else
           Digest::MD5.hexdigest(job['args'].to_json)

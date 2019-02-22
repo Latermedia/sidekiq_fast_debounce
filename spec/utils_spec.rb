@@ -116,9 +116,9 @@ RSpec.describe SidekiqFastDebounce::Utils do
   describe 'debounce_key' do
     it 'should raise error' do
       job = sidekiq_job('KeyWorker', [])
-      expect {
+      expect do
         SidekiqFastDebounce::Utils.debounce_key(KeyWorker, job)
-      }.to raise_exception(ArgumentError)
+      end.to raise_exception(ArgumentError)
     end
 
     it 'should return the only argument' do
@@ -135,7 +135,7 @@ RSpec.describe SidekiqFastDebounce::Utils do
 
     it 'should return the debounce_key override' do
       deb_opts = { debounce_key: 'test' }
-      job = sidekiq_job('KeyWorker', [1, 'arg'])
+      sidekiq_job('KeyWorker', [1, 'arg'])
       deb_key = SidekiqFastDebounce::Utils.debounce_key(KeyWorker, {}, deb_opts)
       expect(deb_key).to eq('test')
     end

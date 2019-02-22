@@ -5,9 +5,7 @@ require 'spec_helper'
 RSpec.describe SidekiqFastDebounce::Config do
   describe 'configuration' do
     before(:each) do
-      if SidekiqFastDebounce.instance_variable_defined?(:@config)
-        SidekiqFastDebounce.remove_instance_variable(:@config)
-      end
+      SidekiqFastDebounce.remove_instance_variable(:@config) if SidekiqFastDebounce.instance_variable_defined?(:@config)
     end
 
     it 'config block and reset work' do

@@ -7,11 +7,11 @@ RSpec.describe SidekiqFastDebounce do
 
   describe 'registering middleware' do
     def client_middleware
-      ::Sidekiq.client_middleware.entries.collect { |e| e.klass }
+      ::Sidekiq.client_middleware.entries.collect(&:klass)
     end
 
     def server_middleware
-      ::Sidekiq.server_middleware.entries.collect { |e| e.klass }
+      ::Sidekiq.server_middleware.entries.collect(&:klass)
     end
 
     def unload_middleware

@@ -7,6 +7,7 @@ require_relative './sidekiq_fast_debounce/config'
 require_relative './sidekiq_fast_debounce/middleware/client'
 require_relative './sidekiq_fast_debounce/middleware/server'
 
+# Provides API for configuring and using SidekiqFastDebounce
 module SidekiqFastDebounce
   class Error < StandardError; end
 
@@ -59,12 +60,11 @@ module SidekiqFastDebounce
       end
 
       # help with testing setup
-      if ::Sidekiq.const_defined?('Testing') && ::Sidekiq::Testing.enabled?
-        add_server_middleware!(Sidekiq::Testing)
-      end
+      add_server_middleware!(Sidekiq::Testing) if ::Sidekiq.const_defined?('Testing') && ::Sidekiq::Testing.enabled?
     end
   end
 
+  # Add perform_debounce to Sidekiq workers
   module ClassMethods
     def perform_debounce(delay, *args)
       item = {

@@ -44,7 +44,7 @@ RSpec.describe Middleware::Sidekiq::Client::FastDebounce do
         end
 
         # set it to this job id
-        jid1 = SfdWorker.perform_debounce(3, 'abc123', { debounce_key: 'stuff' })
+        jid1 = SfdWorker.perform_debounce(3, 'abc123', debounce_key: 'stuff')
 
         ::Sidekiq.redis do |conn|
           expect(conn.get('debounce::SfdWorker::abc123')).to eq(nil)
@@ -52,7 +52,7 @@ RSpec.describe Middleware::Sidekiq::Client::FastDebounce do
         end
 
         # update key to new job id
-        jid2 = SfdWorker.perform_debounce(3, 'abc123', { debounce_key: 'stuff' })
+        jid2 = SfdWorker.perform_debounce(3, 'abc123', debounce_key: 'stuff')
 
         ::Sidekiq.redis do |conn|
           expect(conn.get('debounce::SfdWorker::abc123')).to eq(nil)
@@ -68,7 +68,7 @@ RSpec.describe Middleware::Sidekiq::Client::FastDebounce do
         end
 
         # set it to this job id
-        jid1 = SfdWorker.perform_debounce(3, 'abc123', { debounce_namespace: 'stuff' })
+        jid1 = SfdWorker.perform_debounce(3, 'abc123', debounce_namespace: 'stuff')
 
         ::Sidekiq.redis do |conn|
           expect(conn.get('debounce::SfdWorker::abc123')).to eq(nil)
@@ -76,7 +76,7 @@ RSpec.describe Middleware::Sidekiq::Client::FastDebounce do
         end
 
         # update key to new job id
-        jid2 = SfdWorker.perform_debounce(3, 'abc123', { debounce_namespace: 'stuff' })
+        jid2 = SfdWorker.perform_debounce(3, 'abc123', debounce_namespace: 'stuff')
 
         ::Sidekiq.redis do |conn|
           expect(conn.get('debounce::SfdWorker::abc123')).to eq(nil)

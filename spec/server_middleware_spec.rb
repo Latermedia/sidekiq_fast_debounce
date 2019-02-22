@@ -16,7 +16,7 @@ RSpec.describe Middleware::Sidekiq::Server::FastDebounce do
         SfdWorker.perform_debounce(10, 'abc123')
         SfdWorker.perform_debounce(10, 'abc123')
         SfdWorker.perform_debounce(10, 'abc123')
-        jid = SfdWorker.perform_debounce(10, 'abc123')
+        SfdWorker.perform_debounce(10, 'abc123')
 
         expect(SfdWorker.jobs.size).to eq(4)
         expect(SfdWorker).to receive(:trigger).once
@@ -28,7 +28,7 @@ RSpec.describe Middleware::Sidekiq::Server::FastDebounce do
         SfdWorker2.perform_debounce(10, 'abc123', 'stuff')
         SfdWorker2.perform_debounce(10, 'abc123', 'stuff')
         SfdWorker2.perform_debounce(10, 'abc123', 'stuff')
-        jid = SfdWorker2.perform_debounce(10, 'abc123', 'stuff')
+        SfdWorker2.perform_debounce(10, 'abc123', 'stuff')
 
         expect(SfdWorker2.jobs.size).to eq(4)
         expect(SfdWorker2).to receive(:trigger).once

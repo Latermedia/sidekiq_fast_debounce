@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module SidekiqFastDebounce
+  # Global configuration for SidekiqFastDebounce
   class Config
     GRACE_TTL_DEFAULT = 60
 

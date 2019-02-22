@@ -5,6 +5,7 @@ require 'sidekiq'
 module Middleware
   module Sidekiq
     module Server
+      # Sidekiq server middleware to noop debounced jobs
       class FastDebounce
         # @param [Object] worker the worker instance
         # @param [Hash] job the full job payload
