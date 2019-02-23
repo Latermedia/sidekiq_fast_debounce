@@ -6,16 +6,16 @@ class NamespaceWorker; end
 class KeyWorker; end
 
 RSpec.describe SidekiqFastDebounce::Utils do
-  describe 'debounce_opt!' do
+  describe 'extract_opt!' do
     it 'returns present: false' do
       args = {
         things: 1234
       }
 
-      opt = SidekiqFastDebounce::Utils.debounce_opt!(:test, args)
+      opt = SidekiqFastDebounce::Utils.extract_opt!(:test, args)
 
-      expect(opt.size).to eq(1)
-      expect(opt[:present]).to eq(false)
+      expect(opt.size).to eq(0)
+      expect(opt.key?(:value)).to eq(false)
 
       expect(args.size).to eq(1)
       expect(args[:things]).to eq(1234)
@@ -27,10 +27,9 @@ RSpec.describe SidekiqFastDebounce::Utils do
         stuff: :junk
       }
 
-      opt = SidekiqFastDebounce::Utils.debounce_opt!(:things, args)
+      opt = SidekiqFastDebounce::Utils.extract_opt!(:things, args)
 
-      expect(opt.size).to eq(2)
-      expect(opt[:present]).to eq(true)
+      expect(opt.size).to eq(1)
       expect(opt[:value]).to eq(1234)
 
       expect(args.size).to eq(1)
@@ -44,10 +43,9 @@ RSpec.describe SidekiqFastDebounce::Utils do
         :stuff => :junk
       }
 
-      opt = SidekiqFastDebounce::Utils.debounce_opt!(:things, args)
+      opt = SidekiqFastDebounce::Utils.extract_opt!(:things, args)
 
-      expect(opt.size).to eq(2)
-      expect(opt[:present]).to eq(true)
+      expect(opt.size).to eq(1)
       expect(opt[:value]).to eq(1234)
 
       expect(args.size).to eq(1)
