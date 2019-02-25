@@ -1,8 +1,12 @@
 # SidekiqFastDebounce
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/sidekiq_fast_debounce`. To experiment with that code, run `bin/console` for an interactive prompt.
+`SidekiqFastDebounce` add debounce functionality to your Sidekiq workers via the `perform_debounce` method. There are a few other Sidekiq debounce gems out there, but the two most popular ones both search the `ScheduledSet` to remove previous jobs. At the time of writing our `ScheduledSet` contains over 1 million jobs. Searching through even a small fraction of those jobs would be a problem.
 
-TODO: Delete this and the text above, and describe your gem
+Instead we decided to rely on the fact that Sidekiq jobs should be [idempotent](https://github.com/mperham/sidekiq/wiki/Best-Practices#2-make-your-job-idempotent-and-transactional). If multiple version of the job run, that is ok.
+
+When a job is debounced via `perform_debounce`, we generate what is effectively a lock key for a job based on its worker class and arguments, that we call the `debounce_key`. We store the Sidekiq job id as the value of this key/value pair and and any Sidekiq job that runs that doesn't match the stored job id, will get skipped. This ensures on the last debounced job actually runs. As the job runs it cleans up the `debounce_key` so that the next debounced job would be able to run.
+
+We are treating debouncing as an omptimization, not a strict requirement.
 
 ## Installation
 
