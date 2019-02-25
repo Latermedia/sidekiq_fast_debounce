@@ -37,12 +37,12 @@ RSpec.describe Middleware::Sidekiq::Server::FastDebounce do
 
       it 'should allow retries to pass through' do
         job = sidekiq_job(SfdWorker, ['abc123'])
-        job['debounce_key'] = "debounce::SfdWorker::abc123"
+        job['debounce_key'] = 'debounce::SfdWorker::abc123'
         job['retry_count'] = 2
 
         middleware = Middleware::Sidekiq::Server::FastDebounce.new
 
-        trigger = double()
+        trigger = double
         expect(trigger).to receive(:trigger)
 
         middleware.call(SfdWorker.new, job, 'default') do
@@ -51,15 +51,15 @@ RSpec.describe Middleware::Sidekiq::Server::FastDebounce do
       end
 
       it 'skip retries if another morker is scheduled for this key' do
-        jid = SfdWorker.perform_debounce(10, 'abc123')
+        SfdWorker.perform_debounce(10, 'abc123')
 
         job = sidekiq_job(SfdWorker, ['abc123'])
-        job['debounce_key'] = "debounce::SfdWorker::abc123"
+        job['debounce_key'] = 'debounce::SfdWorker::abc123'
         job['retry_count'] = 2
 
         middleware = Middleware::Sidekiq::Server::FastDebounce.new
 
-        trigger = double()
+        trigger = double
         expect(trigger).to_not receive(:trigger)
 
         middleware.call(SfdWorker.new, job, 'default') do
