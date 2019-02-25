@@ -105,6 +105,12 @@ By default the debounce keys are namespaced with the worker class name. You can 
 MyWorker.perform_debounce(10.seconds, 'arg1', :arg2, debounce_namespace: 'ns123')
 ```
 
+### Retries
+
+If job 1 fails, then job 2 gets enqueued via `perform_debounce`, job 1 will not be processed if its retry is happened before job 2 runs. This is because job 2 will handle whatever job 1 would have. (Remember, Sidekiq jobs should be [idempotent](https://github.com/mperham/sidekiq/wiki/Best-Practices#2-make-your-job-idempotent-and-transactional).) If the job 1's retry would happen after job 2 run, the job 1's retry will run.
+
+For details on the implementation you can checkout the server side middleware's source.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

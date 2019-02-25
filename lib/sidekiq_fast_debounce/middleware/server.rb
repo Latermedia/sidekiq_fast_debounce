@@ -25,7 +25,7 @@ module Middleware
             # allow retries of the debounced job
             # a retry will get skipped if a new job with the same debounce
             # key has been enqueued
-            check_debounce = !(job.key?('retry_count') && debounce_jid.blank?)
+            check_debounce = !(job.key?('retry_count') && debounce_jid.nil?)
 
             return nil if check_debounce && job['jid'] != debounce_jid
 
