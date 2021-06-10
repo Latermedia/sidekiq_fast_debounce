@@ -82,6 +82,7 @@ module SidekiqFastDebounce
     end
   end
 
+  # Add perform_debounce to Sidekiq::Worker::Setter to enable set(..).perform_debounce(...)
   module Setter
     def perform_debounce(delay, *args)
       item = {

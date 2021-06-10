@@ -18,19 +18,13 @@ module Middleware
         #   the job is not to be enqueued into redis, otherwise the block's
         #   return value is returned
         # @yield the next middleware in the chain or the enqueuing of the job
-        def call(worker_class, job, _queue, _redis_pool)
+        def call(_worker_class, job, _queue, _redis_pool)
           # a `debounce` key signals this is a debounced job
           if job.key?('debounce')
             delay = job.delete('debounce')
             jid = job['jid']
 
-            namespace = job[:debounce_namespace] || job['debounce_namespace']
-            namespace ||= worker_class.to_s
-
-            base_key = job[:debounce_key] || job['debounce_key']
-            base_key ||= SidekiqFastDebounce::Utils.debounce_key(job)
-
-            job['debounce_key'] = "debounce::#{namespace}::#{base_key}"
+            job['debounce_key'] = SidekiqFastDebounce::Utils.debounce_key(job)
 
             ttl = job[:debounce_ttl] || job['debounce_ttl']
             ttl ||= SidekiqFastDebounce.config.grace_ttl
