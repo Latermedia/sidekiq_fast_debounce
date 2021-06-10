@@ -38,6 +38,16 @@ class SfdWorker2
   end
 end
 
+class SfdWorker3
+  include Sidekiq::Worker
+
+  def self.trigger(arg1); end
+
+  def perform(arg1)
+    self.class.trigger(arg1)
+  end
+end
+
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
   config.example_status_persistence_file_path = '.rspec_status'

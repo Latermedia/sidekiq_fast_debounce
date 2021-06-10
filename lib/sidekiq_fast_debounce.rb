@@ -83,8 +83,10 @@ module SidekiqFastDebounce
   end
 
   # Add perform_debounce to Sidekiq::Worker::Setter to enable set(..).perform_debounce(...)
+  # @see https://github.com/mperham/sidekiq/blob/master/lib/sidekiq/worker.rb
   module Setter
     def perform_debounce(delay, *args)
+      # @klass and @opts are an instance variables on Sidekiq::Worker::Setter
       item = {
         'class' => @klass,
         'args' => args,

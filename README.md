@@ -69,53 +69,33 @@ MyWorker.perform_debounce(10.seconds, 'arg1', :arg2)
 
 ### Debounce Key
 
-There are a number of different ways to specify the debounce key. They are listed here in order of presedence. If none of these methods are found, it will raise an `ArgumentError`.
+The debounce key is what provides a the uniqueness between the enqueued debounced jobs. Generally, you'll just let it be set implicitly as a value dervide from the worker name and the arguments. Any job for with the same worker and arguments will have the same debounce key.
 
-#### In `perform_debounce`
-
-As a optional param at the end of the `perform_debounce`.
+If you need to debounce jobs such that different arguments result in the same key, you can explicity set the key via the `set` method.
 
 ```ruby
 MyWorker.set(debounce_key: 'abc123').perform_debounce(10.seconds, 'arg1')
 ```
 
-#### Directly from the job arguments
-
-The value of `arg1` will be the debounce key.
-
-```ruby
-class MyWorker
-  include Sidekiq::Worker
-
-  def perform(arg1)
-    #
-  end
-end
-```
-
-The jobs args will be converted to JSON then the MD5 hash of the resulting JSON will be the debounce key.
-
-```ruby
-class MyWorker
-  include Sidekiq::Worker
-
-  def perform(arg1, arg2)
-    #
-  end
-end
-```
-
 ### Debounce Namespace
 
-By default the debounce keys are namespaced with the worker class name. You can override this with an optional param at the end of the `perform_debounce`. This will be removed from the args before being pushed to Redis.
+By default the debounce keys are namespaced with the worker class name. You can override this using `set`.
 
 ```ruby
 MyWorker.set(debounce_namespace: 'ns123').perform_debounce(10.seconds, 'arg1', :arg2)
 ```
 
+### Debouncing Completely Different Jobs
+
+By explicity setting both `debounce_key` and `debounce_namespace`, you have complete control of the Redis key being used to control the debounce nature of the jobs
+
+```ruby
+MyWorker.set(debounce_key: 'abc123', debounce_namespace: 'ns123').perform_debounce(10.seconds, 'arg1')
+```
+
 ### Retries
 
-If job 1 fails, then job 2 gets enqueued via `perform_debounce`, job 1 will not be processed if its retry happenes before job 2 runs. This is because job 2 will handle whatever job 1 would have. (Remember, Sidekiq jobs should be [idempotent](https://github.com/mperham/sidekiq/wiki/Best-Practices#2-make-your-job-idempotent-and-transactional).) If the job 1's retry would happen after job 2 run, the job 1's retry will run.
+If job 1 fails, then job 2 gets enqueued via `perform_debounce`, job 1 will not be processed if its retry happened before job 2 runs. This is because job 2 will handle whatever job 1 would have. (Remember, Sidekiq jobs should be [idempotent](https://github.com/mperham/sidekiq/wiki/Best-Practices#2-make-your-job-idempotent-and-transactional).) If the job 1's retry would happen after job 2 run, the job 1's retry will run.
 
 For details on the implementation you can checkout the server side middleware's source.
 

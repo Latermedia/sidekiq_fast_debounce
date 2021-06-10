@@ -7,7 +7,7 @@ require_relative '../utils'
 module Middleware
   module Sidekiq
     module Client
-      # Sidekiq client middle to handle setting the debounce key for a debounced job
+      # Sidekiq client middleware to handle setting the debounce key for a debounced job
       class FastDebounce
         # @param [String, Class] worker_class the string or class of the worker class being enqueued
         # @param [Hash] job the full job payload

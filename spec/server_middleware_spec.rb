@@ -66,6 +66,43 @@ RSpec.describe Middleware::Sidekiq::Server::FastDebounce do
           trigger.trigger
         end
       end
+
+      context 'set options' do
+        it 'debounce_key' do
+          SfdWorker.set(debounce_key: 'abc').perform_debounce(10, '123')
+          SfdWorker.set(debounce_key: 'abc').perform_debounce(10, '234')
+          SfdWorker.set(debounce_key: 'abc').perform_debounce(10, '345')
+
+          expect(SfdWorker.jobs.size).to eq(3)
+          expect(SfdWorker).to receive(:trigger).once
+          expect_any_instance_of(Redis).to receive(:del).with('debounce::SfdWorker::abc').once
+          Sidekiq::Worker.drain_all
+        end
+
+        it 'debounce_namespace' do
+          SfdWorker.set(debounce_namespace: 'abc').perform_debounce(10, '123')
+          SfdWorker3.set(debounce_namespace: 'abc').perform_debounce(10, '123')
+
+          expect(SfdWorker.jobs.size).to eq(1)
+          expect(SfdWorker3.jobs.size).to eq(1)
+          expect(SfdWorker).to_not receive(:trigger)
+          expect(SfdWorker3).to receive(:trigger).once
+          expect_any_instance_of(Redis).to receive(:del).with('debounce::abc::123').once
+          Sidekiq::Worker.drain_all
+        end
+
+        it 'debounce_namespace & debounce_key' do
+          SfdWorker.set(debounce_namespace: 'abc', debounce_key: '123').perform_debounce(10, 'arg1')
+          SfdWorker3.set(debounce_namespace: 'abc', debounce_key: '123').perform_debounce(10, 'arg1')
+
+          expect(SfdWorker.jobs.size).to eq(1)
+          expect(SfdWorker3.jobs.size).to eq(1)
+          expect(SfdWorker).to_not receive(:trigger)
+          expect(SfdWorker3).to receive(:trigger).once
+          expect_any_instance_of(Redis).to receive(:del).with('debounce::abc::123').once
+          Sidekiq::Worker.drain_all
+        end
+      end
     end
   end
 end

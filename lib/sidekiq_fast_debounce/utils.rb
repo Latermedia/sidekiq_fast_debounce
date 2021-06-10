@@ -19,7 +19,7 @@ module SidekiqFastDebounce
       # @return [String] key to use for this job
       def base_key(job)
         key = job[:debounce_key] || job['debounce_key']
-        return key unless key.nil?
+        return key if key
 
         if job['args'].empty?
           'DEBOUNCE_NO_ARGS'
