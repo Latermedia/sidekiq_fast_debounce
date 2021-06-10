@@ -20,7 +20,6 @@ end
 
 class SfdWorker
   include Sidekiq::Worker
-  include SidekiqFastDebounce
 
   def self.trigger(arg1); end
 
@@ -31,7 +30,6 @@ end
 
 class SfdWorker2
   include Sidekiq::Worker
-  include SidekiqFastDebounce
 
   def self.trigger(arg1, arg2); end
 

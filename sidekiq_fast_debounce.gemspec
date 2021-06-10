@@ -39,7 +39,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'sidekiq'
 
-  spec.add_development_dependency 'bundler', '~> 1.17'
+  spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'bundler-audit'
   spec.add_development_dependency 'fakeredis'
   spec.add_development_dependency 'rake'

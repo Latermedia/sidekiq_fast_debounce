@@ -30,6 +30,8 @@ $ gem install sidekiq_fast_debounce
 
 ## Usage
 
+`perform_debounce` will automatically be available on any Sidekiq worker.
+
 ### Add Middleware
 
 This will automatically register client and server middleware. Place in an initializer, probably the same one you configure `sidekiq` in.
@@ -53,6 +55,10 @@ SidekiqFastDebounce.configure do |config|
   config.grace_ttl = 60
 end
 ```
+Can also we set for an individual job
+```ruby
+MyWorker.set(debounce_ttl: 30).perform_debounce(10.seconds, 'arg1')
+```
 
 ### Debouncing
 
@@ -67,10 +73,10 @@ There are a number of different ways to specify the debounce key. They are liste
 
 #### In `perform_debounce`
 
-As a optional param at the end of the `perform_debounce`. This will be removed from the args before being pushed to Redis.
+As a optional param at the end of the `perform_debounce`.
 
 ```ruby
-MyWorker.perform_debounce(10.seconds, 'arg1', :arg2, debounce_key: 'abc123')
+MyWorker.set(debounce_key: 'abc123').perform_debounce(10.seconds, 'arg1')
 ```
 
 #### Directly from the job arguments
@@ -80,7 +86,6 @@ The value of `arg1` will be the debounce key.
 ```ruby
 class MyWorker
   include Sidekiq::Worker
-  include SidekiqFastDebounce
 
   def perform(arg1)
     #
@@ -93,7 +98,6 @@ The jobs args will be converted to JSON then the MD5 hash of the resulting JSON 
 ```ruby
 class MyWorker
   include Sidekiq::Worker
-  include SidekiqFastDebounce
 
   def perform(arg1, arg2)
     #
@@ -106,12 +110,12 @@ end
 By default the debounce keys are namespaced with the worker class name. You can override this with an optional param at the end of the `perform_debounce`. This will be removed from the args before being pushed to Redis.
 
 ```ruby
-MyWorker.perform_debounce(10.seconds, 'arg1', :arg2, debounce_namespace: 'ns123')
+MyWorker.set(debounce_namespace: 'ns123').perform_debounce(10.seconds, 'arg1', :arg2)
 ```
 
 ### Retries
 
-If job 1 fails, then job 2 gets enqueued via `perform_debounce`, job 1 will not be processed if its retry is happened before job 2 runs. This is because job 2 will handle whatever job 1 would have. (Remember, Sidekiq jobs should be [idempotent](https://github.com/mperham/sidekiq/wiki/Best-Practices#2-make-your-job-idempotent-and-transactional).) If the job 1's retry would happen after job 2 run, the job 1's retry will run.
+If job 1 fails, then job 2 gets enqueued via `perform_debounce`, job 1 will not be processed if its retry happenes before job 2 runs. This is because job 2 will handle whatever job 1 would have. (Remember, Sidekiq jobs should be [idempotent](https://github.com/mperham/sidekiq/wiki/Best-Practices#2-make-your-job-idempotent-and-transactional).) If the job 1's retry would happen after job 2 run, the job 1's retry will run.
 
 For details on the implementation you can checkout the server side middleware's source.
 

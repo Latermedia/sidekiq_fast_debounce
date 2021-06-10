@@ -24,20 +24,21 @@ module Middleware
             delay = job.delete('debounce')
             jid = job['jid']
 
-            # extract any debounce options from the job args
-            deb_opts = SidekiqFastDebounce::Utils.debounce_opts(job)
+            namespace = job[:debounce_namespace] || job['debounce_namespace']
+            namespace ||= worker_class.to_s
 
-            worker_klass = SidekiqFastDebounce::Utils.const(worker_class)
-
-            namespace = SidekiqFastDebounce::Utils.debounce_namespace(worker_klass, job, deb_opts)
-            base_key = SidekiqFastDebounce::Utils.debounce_key(worker_klass, job, deb_opts)
+            base_key = job[:debounce_key] || job['debounce_key']
+            base_key ||= SidekiqFastDebounce::Utils.debounce_key(job)
 
             job['debounce_key'] = "debounce::#{namespace}::#{base_key}"
 
-            ttl = delay + SidekiqFastDebounce.config.grace_ttl
+            ttl = job[:debounce_ttl] || job['debounce_ttl']
+            ttl ||= SidekiqFastDebounce.config.grace_ttl
+
+            expires_in = delay + ttl.to_i
 
             ::Sidekiq.redis do |conn|
-              conn.setex(job['debounce_key'], ttl.to_i, jid)
+              conn.setex(job['debounce_key'], expires_in, jid)
             end
           end
 
