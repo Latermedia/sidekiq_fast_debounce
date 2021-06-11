@@ -32,7 +32,7 @@ module Middleware
             expires_in = delay + ttl.to_i
 
             ::Sidekiq.redis do |conn|
-              conn.setex(job['debounce_key'], expires_in, jid)
+              conn.setex(job['debounce_key'], expires_in.to_i, jid)
             end
           end
 
