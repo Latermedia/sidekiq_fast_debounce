@@ -12,10 +12,6 @@ module SidekiqFastDebounce
   class Error < StandardError; end
 
   class << self
-    def included(base)
-      base.extend(ClassMethods)
-    end
-
     # Current SidekiqFastDebounce configuration
     # @return [SidekiqFastDebounce::Config]
     def config
@@ -81,14 +77,27 @@ module SidekiqFastDebounce
     # @param args [*Array]
     # @return [String] Sidekiq job id
     def perform_debounce(delay, *args)
+      at = Time.now.to_f + delay.to_f
+      set('debounce' => delay.to_f).perform_at(at, *args)
+    end
+  end
+
+  # Add perform_debounce to Sidekiq::Worker::Setter to enable set(..).perform_debounce(...)
+  # @see https://github.com/mperham/sidekiq/blob/master/lib/sidekiq/worker.rb
+  module Setter
+    def perform_debounce(delay, *args)
+      # @klass and @opts are an instance variables on Sidekiq::Worker::Setter
       item = {
-        'class' => self,
+        'class' => @klass,
         'args' => args,
         'at' => Time.now.to_f + delay.to_f,
         'debounce' => delay.to_f
       }
 
-      client_push(item)
+      @klass.client_push(@opts.merge(item))
     end
   end
 end
+
+::Sidekiq::Worker::ClassMethods.prepend(SidekiqFastDebounce::ClassMethods)
+::Sidekiq::Worker::Setter.prepend(SidekiqFastDebounce::Setter)
