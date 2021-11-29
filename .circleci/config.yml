@@ -38,7 +38,7 @@ spec_shared: &spec_shared
 jobs:
   deps:
     docker:
-      - image: circleci/ruby:2.5
+      - image: circleci/ruby:2.7.4
     working_directory: ~/sidekiq_fast_debounce
 
     steps:
@@ -47,7 +47,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "sidekiq_fast_debounce.gemspec" }}
+            - v2-dependencies-{{ checksum "sidekiq_fast_debounce.gemspec" }}
 
       - run:
           name: install dependencies
@@ -57,7 +57,7 @@ jobs:
       - save_cache:
           paths:
             - vendor/bundle
-          key: v1-dependencies-{{ checksum "sidekiq_fast_debounce.gemspec" }}
+          key: v2-dependencies-{{ checksum "sidekiq_fast_debounce.gemspec" }}
 
       - run:
           name: dependencies security audit
@@ -67,6 +67,11 @@ jobs:
       - run:
           name: Rubocop
           command: bundle exec rubocop
+
+  ruby-2.7.4:
+    <<: *spec_shared
+    docker:
+      - image: circleci/ruby:2.7.4
 
   ruby-2.6:
     <<: *spec_shared
@@ -90,7 +95,7 @@ jobs:
 
   generate_docs:
     docker:
-      - image: circleci/ruby:2.5
+      - image: circleci/ruby:2.7.4
     working_directory: ~/sidekiq_fast_debounce
 
     steps:
@@ -98,7 +103,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "sidekiq_fast_debounce.gemspec" }}
+            - v2-dependencies-{{ checksum "sidekiq_fast_debounce.gemspec" }}
 
       - run:
           name: Setup bundler path
@@ -125,6 +130,9 @@ workflows:
   build:
     jobs:
       - deps
+      - ruby-2.7.4:
+          requires:
+            - deps
       - ruby-2.6:
           requires:
             - deps
@@ -139,6 +147,7 @@ workflows:
             - deps
       - generate_docs:
           requires:
+            - ruby-2.7.4
             - ruby-2.6
             - ruby-2.5
             - ruby-2.4

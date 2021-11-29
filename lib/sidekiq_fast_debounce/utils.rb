@@ -8,9 +8,10 @@ module SidekiqFastDebounce
       # @param klass [String, Class]
       # @return [Class]
       def const(klass)
-        if klass.is_a?(Class)
+        case klass
+        when Class
           klass
-        elsif klass.is_a?(String)
+        when String
           klass.split('::').reduce(Module, :const_get)
         else
           raise ArgumentError, "klass should be String or Class, it is `#{klass.class}`"
