@@ -2,45 +2,45 @@
 #
 # Check https://circleci.com/docs/2.0/language-ruby/ for more details
 #
-version: 2.1
-
-spec_shared: &spec_shared
-  working_directory: ~/sidekiq_fast_debounce
-  steps:
-    - checkout
-
-    - run:
-        name: install dependencies
-        command: |
-          bundle check --path vendor/bundle || bundle install --jobs=4 --retry=3 --path vendor/bundle
-
-    - run:
-        name: Make test-results
-        command: |
-          mkdir /tmp/test-results
-
-    - run:
-        name: Run basic specs
-        command: |
-          bundle exec rspec --format progress \
-                          --format RspecJunitFormatter \
-                          --out /tmp/test-results/rspec-basic.xml \
-                          --format progress \
-                          spec
-
-    # collect reports
-    - store_test_results:
-        path: /tmp/test-results
-    - store_artifacts:
-        path: /tmp/test-results
-        destination: test-results
+version: 2.1 
 
 commands:
   test:
     parameters:
-    v:
-      default: "2.7.4" # Latest version
-      type: string
+      v:
+        default: "2.7.4" # Latest version
+        type: string
+    working_directory: ~/sidekiq_fast_debounce
+    docker:
+      - image: circleci/ruby:<< parameters.v >>
+    steps:
+      - checkout
+
+      - run:
+          name: install dependencies
+          command: |
+            bundle check --path vendor/bundle || bundle install --jobs=4 --retry=3 --path vendor/bundle
+
+      - run:
+          name: Make test-results
+          command: |
+            mkdir /tmp/test-results
+
+      - run:
+          name: Run basic specs
+          command: |
+            bundle exec rspec --format progress \
+                            --format RspecJunitFormatter \
+                            --out /tmp/test-results/rspec-basic.xml \
+                            --format progress \
+                            spec
+
+      # collect reports
+      - store_test_results:
+          path: /tmp/test-results
+      - store_artifacts:
+          path: /tmp/test-results
+          destination: test-results
 
 jobs:
   deps:
@@ -76,28 +76,19 @@ jobs:
           command: bundle exec rubocop
 
   ruby-2-7-4:
-    <<: *spec_shared
     name: 'ruby-2.7.4'
-    docker:
-      - image: circleci/ruby:2.7.4
     steps:
       - test:
         v: '2.7.4'
 
   ruby-2-6:
-    <<: *spec_shared
     name: 'ruby-2.6'
-    docker:
-      - image: circleci/ruby:2.6
     steps:
       - test:
         v: '2.6'
 
   ruby-2-5:
-    <<: *spec_shared
     name: 'ruby-2.5'
-    docker:
-      - image: circleci/ruby:2.5
     steps:
       - test:
         v: '2.5'
