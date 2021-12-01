@@ -2,17 +2,17 @@ AllCops:
   TargetRubyVersion: 2.5.1
   NewCops: enable
 
+Layout/LineLength:
+  Max: 120
+  Exclude:
+    - "spec/**/*"
+    - "*.gemspec"
+
 Lint/EmptyClass:
   Enabled: false
 
 Metrics:
   Enabled: false
-
-Metrics/LineLength:
-  Max: 120
-  Exclude:
-    - "spec/**/*"
-    - "*.gemspec"
 
 # to support Ruby 2.2
 Style/NumericPredicate:
