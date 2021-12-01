@@ -4,7 +4,7 @@
 #
 version: 2.1 
 
-commands:
+jobs:
   test:
     parameters:
       v:
@@ -41,11 +41,9 @@ commands:
       - store_artifacts:
           path: /tmp/test-results
           destination: test-results
-
-jobs:
   deps:
     docker:
-      - image: circleci/ruby:<< parameters.v >>
+      - image: circleci/ruby:2.7.4
     working_directory: ~/sidekiq_fast_debounce
 
     steps:
@@ -74,24 +72,6 @@ jobs:
       - run:
           name: Rubocop
           command: bundle exec rubocop
-
-  ruby-2-7-4:
-    name: 'ruby-2.7.4'
-    steps:
-      - test:
-        v: '2.7.4'
-
-  ruby-2-6:
-    name: 'ruby-2.6'
-    steps:
-      - test:
-        v: '2.6'
-
-  ruby-2-5:
-    name: 'ruby-2.5'
-    steps:
-      - test:
-        v: '2.5'
 
   generate_docs:
     docker:
@@ -129,17 +109,23 @@ workflows:
   build:
     jobs:
       - deps
-      - ruby-2-7-4:
+      - test:
+          name: "ruby-2.7.4"
+          v: "2.7.4"
           requires:
             - deps
-      - ruby-2-6:
+      - test:
+          name: "ruby-2.6"
+          v: "2.6"
           requires:
             - deps
-      - ruby-2-5:
+      - test:
+          name: "ruby-2.5"
+          v: "2.5"
           requires:
             - deps
       - generate_docs:
           requires:
-            - ruby-2-7-4
-            - ruby-2-6
-            - ruby-2-5
+            - ruby-2.7.4
+            - ruby-2.6
+            - ruby-2.5
