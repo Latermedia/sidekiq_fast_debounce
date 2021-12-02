@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 class NamespaceWorker; end
+
 class KeyWorker; end
 
 RSpec.describe SidekiqFastDebounce::Utils do

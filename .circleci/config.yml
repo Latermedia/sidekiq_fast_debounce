@@ -1,44 +1,49 @@
-# Ruby CircleCI 2.0 configuration file
+# Ruby CircleCI 2.1 configuration file
 #
 # Check https://circleci.com/docs/2.0/language-ruby/ for more details
 #
-version: 2
-
-spec_shared: &spec_shared
-  working_directory: ~/sidekiq_fast_debounce
-  steps:
-    - checkout
-
-    - run:
-        name: install dependencies
-        command: |
-          bundle check --path vendor/bundle || bundle install --jobs=4 --retry=3 --path vendor/bundle
-
-    - run:
-        name: Make test-results
-        command: |
-          mkdir /tmp/test-results
-
-    - run:
-        name: Run basic specs
-        command: |
-          bundle exec rspec --format progress \
-                          --format RspecJunitFormatter \
-                          --out /tmp/test-results/rspec-basic.xml \
-                          --format progress \
-                          spec
-
-    # collect reports
-    - store_test_results:
-        path: /tmp/test-results
-    - store_artifacts:
-        path: /tmp/test-results
-        destination: test-results
+version: 2.1 
 
 jobs:
+  test:
+    parameters:
+      v:
+        default: "2.7.4" # Latest version
+        type: string
+    working_directory: ~/sidekiq_fast_debounce
+    docker:
+      - image: circleci/ruby:<< parameters.v >>
+    steps:
+      - checkout
+
+      - run:
+          name: install dependencies
+          command: |
+            bundle check --path vendor/bundle || bundle install --jobs=4 --retry=3 --path vendor/bundle
+
+      - run:
+          name: Make test-results
+          command: |
+            mkdir /tmp/test-results
+
+      - run:
+          name: Run basic specs
+          command: |
+            bundle exec rspec --format progress \
+                            --format RspecJunitFormatter \
+                            --out /tmp/test-results/rspec-basic.xml \
+                            --format progress \
+                            spec
+
+      # collect reports
+      - store_test_results:
+          path: /tmp/test-results
+      - store_artifacts:
+          path: /tmp/test-results
+          destination: test-results
   deps:
     docker:
-      - image: circleci/ruby:2.5
+      - image: circleci/ruby:2.7.4
     working_directory: ~/sidekiq_fast_debounce
 
     steps:
@@ -47,7 +52,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "sidekiq_fast_debounce.gemspec" }}
+            - v2-dependencies-{{ checksum "sidekiq_fast_debounce.gemspec" }}
 
       - run:
           name: install dependencies
@@ -57,7 +62,7 @@ jobs:
       - save_cache:
           paths:
             - vendor/bundle
-          key: v1-dependencies-{{ checksum "sidekiq_fast_debounce.gemspec" }}
+          key: v2-dependencies-{{ checksum "sidekiq_fast_debounce.gemspec" }}
 
       - run:
           name: dependencies security audit
@@ -68,29 +73,9 @@ jobs:
           name: Rubocop
           command: bundle exec rubocop
 
-  ruby-2.6:
-    <<: *spec_shared
-    docker:
-      - image: circleci/ruby:2.6
-
-  ruby-2.5:
-    <<: *spec_shared
-    docker:
-      - image: circleci/ruby:2.5
-
-  ruby-2.4:
-    <<: *spec_shared
-    docker:
-      - image: circleci/ruby:2.4
-
-  ruby-2.3:
-    <<: *spec_shared
-    docker:
-      - image: circleci/ruby:2.3
-
   generate_docs:
     docker:
-      - image: circleci/ruby:2.5
+      - image: circleci/ruby:2.7.4
     working_directory: ~/sidekiq_fast_debounce
 
     steps:
@@ -98,7 +83,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "sidekiq_fast_debounce.gemspec" }}
+            - v2-dependencies-{{ checksum "sidekiq_fast_debounce.gemspec" }}
 
       - run:
           name: Setup bundler path
@@ -121,25 +106,26 @@ jobs:
             - yard
 
 workflows:
-  version: 2
   build:
     jobs:
       - deps
-      - ruby-2.6:
+      - test:
+          name: "ruby-2.7.4"
+          v: "2.7.4"
           requires:
             - deps
-      - ruby-2.5:
+      - test:
+          name: "ruby-2.6"
+          v: "2.6"
           requires:
             - deps
-      - ruby-2.4:
-          requires:
-            - deps
-      - ruby-2.3:
+      - test:
+          name: "ruby-2.5"
+          v: "2.5"
           requires:
             - deps
       - generate_docs:
           requires:
+            - ruby-2.7.4
             - ruby-2.6
             - ruby-2.5
-            - ruby-2.4
-            - ruby-2.3
