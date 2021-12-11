@@ -141,4 +141,4 @@ workflows:
             - ruby-2.5
       - deploy:
           requires:
-            - test
+            - generate_docs
