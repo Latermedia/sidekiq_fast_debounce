@@ -104,9 +104,19 @@ jobs:
           root: /tmp/workspace/docs
           paths:
             - yard
+  deploy:
+    docker:
+      - image: circleci/ruby:2.7.4
+    working_directory: ~/sidekiq_fast_debounce
+    steps:
+      - checkout
+
+      - run:
+          name: Deploy to RubyGems.org
+          command: bundle exec rake release
 
 workflows:
-  build:
+  test-and-deploy:
     jobs:
       - deps
       - test:
@@ -129,3 +139,6 @@ workflows:
             - ruby-2.7.4
             - ruby-2.6
             - ruby-2.5
+      - deploy:
+          requires:
+            - test
