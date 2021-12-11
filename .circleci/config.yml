@@ -141,4 +141,5 @@ workflows:
             - ruby-2.5
       - deploy:
           requires:
+            - deps
             - generate_docs
