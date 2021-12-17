@@ -113,7 +113,7 @@ jobs:
 
       - run:
           name: Deploy to RubyGems.org
-          command: gem push
+          command: bundle install ; bundle exec rake release
 
 workflows:
   test-and-deploy:
